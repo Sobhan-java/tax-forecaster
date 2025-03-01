@@ -8,14 +8,15 @@
 		<version>3.4.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>com.snappay</groupId>
 	<artifactId>taxforecaster</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>taxforecaster</name>
+	<version>0.0.1</version>
+	<name>tax-forecaster</name>
 	<description>Application to calculate Tax Forecaster</description>
 
 	<properties>
-		<java.version>17</java.version>
+		<java.version>22</java.version>
 	</properties>
 
 	<dependencies>
