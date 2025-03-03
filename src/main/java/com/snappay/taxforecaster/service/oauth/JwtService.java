@@ -4,20 +4,21 @@ package com.snappay.taxforecaster.service.oauth;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.snappay.taxforecaster.entity.UserEntity;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class JwtService {
@@ -25,27 +26,12 @@ public class JwtService {
     private final Map<String, String> tokens = new HashMap<>();
     private final Long jwtExpirationSecond;
     private final String secretKey;
+    private final String tokenScopes;
 
-    public JwtService(@Value("${jwt.oauth.expiration}") Long jwtExpirationSecond, @Value("${jwt.secret.key}") String secretKey) {
+    public JwtService(@Value("${jwt.oauth.expiration}") Long jwtExpirationSecond, @Value("${jwt.secret.key}") String secretKey, @Value("${jwt.token.scope}") String tokenScopes) {
         this.jwtExpirationSecond = jwtExpirationSecond;
         this.secretKey = secretKey;
-    }
-
-    private Key getSigningKey() {
-        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
-
-    public OAuth2AccessToken generateToken(String username) {
-        Instant expireAt = LocalDateTime.now().plusSeconds(jwtExpirationSecond).toInstant(ZoneOffset.UTC);
-        Instant issueAt = LocalDateTime.now().toInstant(ZoneOffset.UTC);
-        String token = Jwts.builder()
-                .setExpiration(Date.from(expireAt))
-                .setIssuedAt(Date.from(issueAt))
-                .setSubject(username)
-                .signWith(this.getSigningKey())
-                .compact();
-        return new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, token, issueAt, expireAt);
+        this.tokenScopes = tokenScopes;
     }
 
     public boolean validateToken(String token) {
@@ -66,6 +52,20 @@ public class JwtService {
     }
 
     public OAuth2AccessToken getAccessToken(UserEntity entity) {
-        return this.generateToken(entity.getUsername());
+        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+
+        byte[] apiKeySecretBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
+        Instant expireAt = LocalDateTime.now().plusSeconds(jwtExpirationSecond).toInstant(ZoneOffset.UTC);
+        Instant issueAt = LocalDateTime.now().toInstant(ZoneOffset.UTC);
+        JwtBuilder builder = Jwts.builder()
+                .setId(UUID.randomUUID().toString())
+                .setIssuedAt(Date.from(issueAt))
+                .setExpiration(Date.from(expireAt))
+                .setSubject(entity.getUsername())
+                .signWith(signatureAlgorithm, signingKey);
+
+        String[] splitScope = tokenScopes.split(",");
+        return new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, builder.compact(), issueAt, expireAt, Set.of(splitScope));
     }
 }

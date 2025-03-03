@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -21,7 +22,12 @@ public class OauthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = request.getHeader(HttpHeaders.AUTHORIZATION).replace("Bearer ", "");
+        String tokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (StringUtils.isBlank(tokenHeader) || !tokenHeader.startsWith("Bearer")) {
+            doFilter(request, response, filterChain);
+            return;
+        }
+        String token = tokenHeader.replace("Bearer ", "");
         if (jwtService.validateToken(token)) {
             response.sendError(HttpStatus.UNAUTHORIZED.value(), "token.not.valid");
         }
