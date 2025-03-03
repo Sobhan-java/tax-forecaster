@@ -1,7 +1,8 @@
 package com.snappay.taxforecaster.controller;
 
-import com.snappay.taxforecaster.common.TaxUser;
-import com.snappay.taxforecaster.service.oauth.JwtService;
+import com.snappay.taxforecaster.entity.UserEntity;
+import com.snappay.taxforecaster.model.TaxUserDto;
+import com.snappay.taxforecaster.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,15 +14,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/oauth")
 public class LoginController {
 
-    private final JwtService jwtService;
+    private final UserService userService;
 
-    public LoginController(JwtService jwtService) {
-        this.jwtService = jwtService;
+    public LoginController(UserService userService) {
+        this.userService = userService;
     }
 
-    @Operation(summary = "وظیفه لاگین کردن کاربر",description = "زمانیکه نام کاربری و یا رمز عبور کاربر اشتباه یک ارور کاربر یافت نشد میدهد")
+    @Operation(summary = "وظیفه لاگین کردن کاربر", description = "زمانیکه نام کاربری و یا رمز عبور کاربر اشتباه یک ارور کاربر یافت نشد میدهد")
     @PostMapping("/login")
-    public OAuth2AccessToken login(@RequestBody TaxUser user){
-        return jwtService.getAccessToken(user);
+    public OAuth2AccessToken login(@RequestBody TaxUserDto user) {
+        return userService.login(user);
+    }
+
+    @Operation(summary = "ثبت نام کاربر")
+    @PostMapping("/register")
+    public UserEntity register(@RequestBody TaxUserDto dto) {
+        return userService.save(dto);
     }
 }

@@ -1,18 +1,14 @@
 package com.snappay.taxforecaster.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public class AbstractModel<T> {
 
-import java.util.List;
+    private T id;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class AbstractModel {
+    public T getId() {
+        return id;
+    }
 
-    private String id;
-    private List<String> errorMessages;
+    public void setId(T id) {
+        this.id = id;
+    }
 }

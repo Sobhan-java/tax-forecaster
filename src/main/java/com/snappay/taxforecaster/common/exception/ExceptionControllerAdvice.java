@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class ExceptionControllerAdvice {
 
     @ExceptionHandler(NotAcceptableException.class)
-    public ResponseEntity<?> handle(NotAcceptableException exception) {
-        return new ResponseEntity<>(exception.getMessages(),exception.getStatus());
+    public ResponseEntity<ErrorModel> handle(NotAcceptableException exception) {
+        return new ResponseEntity<>(new ErrorModel(exception.getMessages()),exception.getStatus());
     }
 }

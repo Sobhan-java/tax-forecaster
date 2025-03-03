@@ -1,16 +1,17 @@
 package com.snappay.taxforecaster.common;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.snappay.taxforecaster.model.AbstractModel;
+import lombok.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaxUser {
+public class TaxUser extends AbstractModel<String> {
 
     private String username;
+    @JsonIgnore
     private String password;
 }
