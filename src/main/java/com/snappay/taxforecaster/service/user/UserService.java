@@ -22,6 +22,10 @@ public class UserService {
         this.jwtService = jwtService;
     }
 
+    public UserEntity getOne(String username) {
+        return repository.findByUsername(username);
+    }
+
     private String encodePassword(String password) {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         return encoder.encode(password);

@@ -1,13 +1,14 @@
 package com.snappay.taxforecaster.service.oauth;
 
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.snappay.taxforecaster.common.TaxUser;
 import com.snappay.taxforecaster.entity.UserEntity;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
@@ -18,15 +19,20 @@ import java.security.Key;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Date;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class JwtService {
 
-    private final Map<String, String> tokens = new HashMap<>();
+    private final Cache<String, Object> cache = Caffeine.newBuilder()
+            .maximumSize(100000)
+            .build();
     private final Long jwtExpirationSecond;
     private final String secretKey;
     private final String tokenScopes;
+    private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
     public JwtService(@Value("${jwt.oauth.expiration}") Long jwtExpirationSecond, @Value("${jwt.secret.key}") String secretKey, @Value("${jwt.token.scope}") String tokenScopes) {
         this.jwtExpirationSecond = jwtExpirationSecond;
@@ -35,27 +41,19 @@ public class JwtService {
     }
 
     public boolean validateToken(String token) {
-        DecodedJWT decodedJWT = JWT.decode(token);
-        String username = decodedJWT.getSubject();
-        if (tokens.get(username).isEmpty()) {
+        OAuth2AccessToken oAuth2AccessToken = (OAuth2AccessToken) cache.getIfPresent(token);
+        if (cache.estimatedSize() == 0 || null == oAuth2AccessToken) {
             return false;
         }
-        return !this.checkExpiration(decodedJWT);
-    }
-
-    private boolean checkExpiration(DecodedJWT decodedJWT) {
-        boolean expire = decodedJWT.getExpiresAt().before(new Date());
-        if (expire) {
-            tokens.remove(decodedJWT.getSubject());
+        if (LocalDateTime.now().toInstant(ZoneOffset.UTC).isAfter(oAuth2AccessToken.getExpiresAt())) {
+            cache.invalidate(oAuth2AccessToken.getTokenValue());
+            return false;
         }
-        return expire;
+        return true;
     }
 
     public OAuth2AccessToken getAccessToken(UserEntity entity) {
-        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
-
-        byte[] apiKeySecretBytes = secretKey.getBytes(StandardCharsets.UTF_8);
-        Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
+        Key signingKey = this.getSigningKey(signatureAlgorithm);
         Instant expireAt = LocalDateTime.now().plusSeconds(jwtExpirationSecond).toInstant(ZoneOffset.UTC);
         Instant issueAt = LocalDateTime.now().toInstant(ZoneOffset.UTC);
         JwtBuilder builder = Jwts.builder()
@@ -66,6 +64,19 @@ public class JwtService {
                 .signWith(signatureAlgorithm, signingKey);
 
         String[] splitScope = tokenScopes.split(",");
-        return new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, builder.compact(), issueAt, expireAt, Set.of(splitScope));
+        OAuth2AccessToken oAuth2AccessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, builder.compact(), issueAt, expireAt, Set.of(splitScope));
+        cache.put(oAuth2AccessToken.getTokenValue(), oAuth2AccessToken);
+        return oAuth2AccessToken;
+    }
+
+    private Key getSigningKey(SignatureAlgorithm signatureAlgorithm) {
+        byte[] apiKeySecretBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        return new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
+    }
+
+    public TaxUser extractToken(String token) {
+        Key signingKey = this.getSigningKey(signatureAlgorithm);
+        Claims claims = Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token).getBody();
+        return new TaxUser(claims.getSubject());
     }
 }

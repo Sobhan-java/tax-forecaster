@@ -14,4 +14,8 @@ public class TaxUser extends AbstractModel<String> {
     private String username;
     @JsonIgnore
     private String password;
+
+    public TaxUser(String username) {
+        this.username = username;
+    }
 }
