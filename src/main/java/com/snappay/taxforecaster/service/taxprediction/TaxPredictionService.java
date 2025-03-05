@@ -8,7 +8,7 @@ import com.snappay.taxforecaster.entity.TaxPredictionEntity;
 import com.snappay.taxforecaster.entity.TaxRateEntity;
 import com.snappay.taxforecaster.model.TaxPrediction;
 import com.snappay.taxforecaster.repository.TaxPredictionRepository;
-import com.snappay.taxforecaster.service.salarytax.TaxRateService;
+import com.snappay.taxforecaster.service.taxrate.TaxRateService;
 import com.snappay.taxforecaster.service.user.UserService;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;

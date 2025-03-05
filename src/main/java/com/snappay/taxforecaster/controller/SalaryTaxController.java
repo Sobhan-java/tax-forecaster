@@ -3,7 +3,7 @@ package com.snappay.taxforecaster.controller;
 import com.snappay.taxforecaster.common.TaxUser;
 import com.snappay.taxforecaster.entity.TaxRateEntity;
 import com.snappay.taxforecaster.model.TaxRateDto;
-import com.snappay.taxforecaster.service.salarytax.TaxRateService;
+import com.snappay.taxforecaster.service.taxrate.TaxRateService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;

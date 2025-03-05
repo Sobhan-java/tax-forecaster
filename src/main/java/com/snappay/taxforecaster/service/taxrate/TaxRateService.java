@@ -1,4 +1,4 @@
-package com.snappay.taxforecaster.service.salarytax;
+package com.snappay.taxforecaster.service.taxrate;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
