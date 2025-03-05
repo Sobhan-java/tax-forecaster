@@ -45,7 +45,7 @@ public class TaxRateService {
         if (salaryTaxExists) {
             throw new NotAcceptableException(Collections.singletonList("salary.tax.duplicated"));
         }
-        BigDecimal maxTax = BigDecimal.valueOf(0);
+        BigDecimal maxTax = BigDecimal.ZERO;
         if (null != dto.getMaxSalary()) {
             if (dto.getMaxSalary().compareTo(dto.getMinSalary()) < 0) {
                 throw new NotAcceptableException(Collections.singletonList("max.salary.is.less.than.min"));
