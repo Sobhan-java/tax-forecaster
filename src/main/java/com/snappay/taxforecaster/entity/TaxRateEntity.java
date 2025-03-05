@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity(name = "income")
+@Entity(name = "tax_rate")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class IncomeEntity {
+public class TaxRateEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -24,17 +24,14 @@ public class IncomeEntity {
     private LocalDateTime createDate;
 
     @Column(nullable = false)
-    private LocalDateTime startDate;
-
-    @Column(nullable = false)
-    private LocalDateTime endDate;
-
-    @Column(nullable = false)
-    private BigDecimal amount;
+    private BigDecimal minSalary;
 
     @Column
-    private String description;
+    private BigDecimal maxSalary;
 
-    @ManyToOne(targetEntity = UserEntity.class, optional = false)
-    private UserEntity user;
+    @Column(nullable = false)
+    private BigDecimal maxTax;
+
+    @Column(unique = true)
+    private Double taxRate;
 }

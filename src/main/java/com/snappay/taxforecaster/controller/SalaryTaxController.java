@@ -1,9 +1,9 @@
 package com.snappay.taxforecaster.controller;
 
 import com.snappay.taxforecaster.common.TaxUser;
-import com.snappay.taxforecaster.entity.IncomeEntity;
-import com.snappay.taxforecaster.model.IncomeDto;
-import com.snappay.taxforecaster.service.income.IncomeService;
+import com.snappay.taxforecaster.entity.TaxRateEntity;
+import com.snappay.taxforecaster.model.TaxRateDto;
+import com.snappay.taxforecaster.service.salarytax.TaxRateService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,18 +13,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/income")
-public class IncomeController {
+@RequestMapping("/api/tax-rate")
+public class SalaryTaxController {
 
-    private final IncomeService service;
+    private final TaxRateService service;
 
-    public IncomeController(IncomeService service) {
+    public SalaryTaxController(TaxRateService service) {
         this.service = service;
     }
 
-    @Operation(summary = "ثبت درآمد کاربر", description = "درصورتیکه تاریخ ایجاد یا انتهای وارد شده برای کاربر ثبت شده باشد ارور میدهد")
+    @Operation(summary = "ثبت جدول مالیاتی", description = "باید مشخص کنید که از حداقل حقوق و تا حداکثر حقوق چه نرخ مالیاتی ثبت شود")
     @PostMapping(value = "")
-    public ResponseEntity<IncomeEntity> save(@RequestBody IncomeDto dto) {
+    public ResponseEntity<TaxRateEntity> save(@RequestBody TaxRateDto dto) {
         TaxUser user = (TaxUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(service.save(dto, user));
     }

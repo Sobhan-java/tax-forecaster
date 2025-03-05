@@ -4,10 +4,10 @@ import com.snappay.taxforecaster.entity.TaxPredictionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Repository
 public interface TaxPredictionRepository extends JpaRepository<TaxPredictionEntity, String> {
 
-    TaxPredictionEntity findByUserIdAndPeriodStartAndPeriodEnd(String userId, LocalDateTime startDate, LocalDateTime endDate);
+    TaxPredictionEntity findByUserIdAndSalary(String userId, BigDecimal salary);
 }

@@ -6,16 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class IncomeDto {
+public class TaxPrediction {
 
-    private BigDecimal amount;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-    private String description;
+    private BigDecimal taxAmount;
+    private BigDecimal salary;
 }

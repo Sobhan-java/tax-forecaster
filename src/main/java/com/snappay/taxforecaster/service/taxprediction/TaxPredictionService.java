@@ -3,55 +3,53 @@ package com.snappay.taxforecaster.service.taxprediction;
 import com.snappay.taxforecaster.common.TaxUser;
 import com.snappay.taxforecaster.common.exception.NotAcceptableException;
 import com.snappay.taxforecaster.entity.TaxPredictionEntity;
-import com.snappay.taxforecaster.repository.IncomeRepository;
+import com.snappay.taxforecaster.entity.TaxRateEntity;
+import com.snappay.taxforecaster.model.TaxPrediction;
 import com.snappay.taxforecaster.repository.TaxPredictionRepository;
+import com.snappay.taxforecaster.service.salarytax.TaxRateService;
 import com.snappay.taxforecaster.service.user.UserService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 public class TaxPredictionService {
 
     private final TaxPredictionRepository repository;
     private final UserService userService;
-    private final IncomeRepository incomeRepository;
-    private final Long taxPercentage;
+    private final TaxRateService taxRateService;
 
-    public TaxPredictionService(TaxPredictionRepository repository, UserService userService, IncomeRepository incomeRepository, @Value("${tax.percentage.amount}") Long taxPercentage) {
+    public TaxPredictionService(TaxPredictionRepository repository, UserService userService, TaxRateService taxRateService) {
         this.repository = repository;
         this.userService = userService;
-        this.incomeRepository = incomeRepository;
-        this.taxPercentage = taxPercentage;
+        this.taxRateService = taxRateService;
     }
 
-    @Cacheable(value = "taxPrediction", key = "#user.username + #start + #end")
-    public TaxPredictionEntity calculateTaxPrediction(String start, String end, TaxUser user) {
-        LocalDateTime startDate = LocalDateTime.parse(start);
-        LocalDateTime endDate = LocalDateTime.parse(end);
-        if (startDate.isBefore(endDate)) {
-            throw new NotAcceptableException(Collections.singletonList("start.date.is.before.end"));
+    public TaxPrediction calculateTaxPrediction(BigDecimal salary, TaxUser user) {
+        if (null == salary) {
+            throw new NotAcceptableException(Collections.singletonList("salary.is.null"));
         }
-        TaxPredictionEntity taxPrediction = repository.findByUserIdAndPeriodStartAndPeriodEnd(user.getId(), startDate, endDate);
-        if (null != taxPrediction) {
-            return taxPrediction;
+        TaxPredictionEntity entity = repository.findByUserIdAndSalary(user.getId(), salary);
+        if (null != entity) {
+            return new TaxPrediction(entity.getTaxAmount(), entity.getSalary());
         }
-        BigDecimal incomeAmount = incomeRepository.getAllAmountOfUser(user.getId(), startDate, endDate);
-        incomeAmount = incomeAmount.multiply(this.getTaxPercentage());
 
-        taxPrediction = new TaxPredictionEntity();
-        taxPrediction.setPeriodStart(startDate);
-        taxPrediction.setPeriodEnd(endDate);
-        taxPrediction.setPredictedAmount(incomeAmount);
-        taxPrediction.setUser(userService.getOne(user.getUsername()));
-        return repository.save(taxPrediction);
-    }
-
-    private BigDecimal getTaxPercentage() {
-        return BigDecimal.valueOf(taxPercentage * 100);
+        BigDecimal taxAmount = BigDecimal.valueOf(0);
+        List<TaxRateEntity> allSalaryTax = taxRateService.getAllTaxRate(salary);
+        for (TaxRateEntity salaryTax : allSalaryTax) {
+            if (BigDecimal.valueOf(0).equals(salaryTax.getMaxSalary()) || salaryTax.getMaxSalary().compareTo(salary) > 0) {
+                taxAmount = taxAmount.add(salary.subtract(salaryTax.getMinSalary()));
+            } else {
+                taxAmount = taxAmount.add(salaryTax.getMaxTax());
+            }
+        }
+        entity = new TaxPredictionEntity();
+        entity.setTaxAmount(taxAmount);
+        entity.setSalary(salary);
+        entity.setUser(userService.getOne(user.getUsername()));
+        repository.save(entity);
+        return new TaxPrediction(entity.getTaxAmount(), entity.getSalary());
     }
 }

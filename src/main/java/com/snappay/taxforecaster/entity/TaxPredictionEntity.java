@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity(name = "tax_prediction")
 @Data
@@ -21,13 +20,10 @@ public class TaxPredictionEntity {
     private String id;
 
     @Column
-    private LocalDateTime periodStart;
+    private BigDecimal salary;
 
     @Column
-    private LocalDateTime periodEnd;
-
-    @Column
-    private BigDecimal predictedAmount;
+    private BigDecimal taxAmount;
 
     @ManyToOne(targetEntity = UserEntity.class, optional = false)
     private UserEntity user;
