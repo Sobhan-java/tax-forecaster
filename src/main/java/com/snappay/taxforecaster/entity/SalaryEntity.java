@@ -7,23 +7,33 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
-@Entity(name = "tax_prediction")
+@Entity(name = "salary")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaxPredictionEntity {
+public class SalaryEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column
-    private BigDecimal salary;
+    @Column(nullable = false)
+    private LocalDateTime createDate;
+
+    @Column(nullable = false)
+    private LocalDateTime startDate;
+
+    @Column(nullable = false)
+    private LocalDateTime endDate;
+
+    @Column(nullable = false)
+    private BigDecimal amount;
 
     @Column
-    private BigDecimal taxAmount;
+    private String description;
 
     @ManyToOne(targetEntity = UserEntity.class, optional = false)
     private UserEntity user;

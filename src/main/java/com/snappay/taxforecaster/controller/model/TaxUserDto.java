@@ -1,4 +1,4 @@
-package com.snappay.taxforecaster.model;
+package com.snappay.taxforecaster.controller.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

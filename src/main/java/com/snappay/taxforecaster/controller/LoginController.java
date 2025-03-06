@@ -1,7 +1,7 @@
 package com.snappay.taxforecaster.controller;
 
+import com.snappay.taxforecaster.controller.model.TaxUserDto;
 import com.snappay.taxforecaster.entity.UserEntity;
-import com.snappay.taxforecaster.model.TaxUserDto;
 import com.snappay.taxforecaster.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;

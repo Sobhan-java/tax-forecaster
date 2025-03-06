@@ -26,7 +26,7 @@ import java.util.UUID;
 @Service
 public class JwtService {
 
-    private final Cache<String, Object> cache = Caffeine.newBuilder()
+    private final Cache<String, OAuth2AccessToken> cache = Caffeine.newBuilder()
             .maximumSize(100000)
             .build();
     private final Long jwtExpirationSecond;
@@ -41,7 +41,7 @@ public class JwtService {
     }
 
     public boolean validateToken(String token) {
-        OAuth2AccessToken oAuth2AccessToken = (OAuth2AccessToken) cache.getIfPresent(token);
+        OAuth2AccessToken oAuth2AccessToken = cache.getIfPresent(token);
         if (cache.estimatedSize() == 0 || null == oAuth2AccessToken) {
             return false;
         }

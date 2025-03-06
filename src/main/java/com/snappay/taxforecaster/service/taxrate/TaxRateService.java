@@ -4,8 +4,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.snappay.taxforecaster.common.TaxUser;
 import com.snappay.taxforecaster.common.exception.NotAcceptableException;
+import com.snappay.taxforecaster.controller.model.TaxRateDto;
 import com.snappay.taxforecaster.entity.TaxRateEntity;
-import com.snappay.taxforecaster.model.TaxRateDto;
 import com.snappay.taxforecaster.repository.TaxRateRepository;
 import org.springframework.stereotype.Service;
 
@@ -56,7 +56,7 @@ public class TaxRateService {
         entity.setMaxTax(maxTax);
         entity.setMinSalary(dto.getMinSalary());
         entity.setMaxSalary(dto.getMaxSalary());
-        entity.setTaxRate(dto.getTaxRate());
+        entity.setTaxRate(dto.getTaxRate() / 100);
         entity.setCreateDate(LocalDateTime.now());
         return repository.save(entity);
     }

@@ -1,8 +1,8 @@
 package com.snappay.taxforecaster.service.user;
 
 import com.snappay.taxforecaster.common.exception.NotAcceptableException;
+import com.snappay.taxforecaster.controller.model.TaxUserDto;
 import com.snappay.taxforecaster.entity.UserEntity;
-import com.snappay.taxforecaster.model.TaxUserDto;
 import com.snappay.taxforecaster.repository.UserRepository;
 import com.snappay.taxforecaster.service.oauth.JwtService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -37,10 +37,10 @@ public class UserService {
     }
 
     public UserEntity save(TaxUserDto dto) {
-        if (null == dto){
+        if (null == dto) {
             throw new NotAcceptableException(Collections.singletonList("dto.is.null"));
         }
-        if (repository.existsByUsername(dto.getUsername())){
+        if (repository.existsByUsername(dto.getUsername())) {
             throw new NotAcceptableException(Collections.singletonList("user.is.exist"));
         }
         UserEntity entity = new UserEntity();
@@ -54,7 +54,7 @@ public class UserService {
         if (null == entity) {
             throw new NotAcceptableException(Collections.singletonList("user.not.found"));
         }
-        if (!this.checkPassword(dto.getPassword(), entity.getPassword())){
+        if (!this.checkPassword(dto.getPassword(), entity.getPassword())) {
             throw new NotAcceptableException(Collections.singletonList("password.not.correct"));
         }
         return jwtService.getAccessToken(entity);

@@ -1,7 +1,7 @@
 package com.snappay.taxforecaster.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.snappay.taxforecaster.model.AbstractModel;
+import com.snappay.taxforecaster.controller.model.AbstractModel;
 import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)

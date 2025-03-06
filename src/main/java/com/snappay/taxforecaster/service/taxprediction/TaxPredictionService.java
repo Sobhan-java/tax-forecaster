@@ -4,70 +4,56 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.snappay.taxforecaster.common.TaxUser;
 import com.snappay.taxforecaster.common.exception.NotAcceptableException;
-import com.snappay.taxforecaster.entity.TaxPredictionEntity;
+import com.snappay.taxforecaster.controller.model.TaxPrediction;
 import com.snappay.taxforecaster.entity.TaxRateEntity;
-import com.snappay.taxforecaster.model.TaxPrediction;
-import com.snappay.taxforecaster.repository.TaxPredictionRepository;
+import com.snappay.taxforecaster.service.salary.SalaryService;
 import com.snappay.taxforecaster.service.taxrate.TaxRateService;
-import com.snappay.taxforecaster.service.user.UserService;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
 @Service
 public class TaxPredictionService {
 
-    private final Cache<BigDecimal, TaxPrediction> cache = Caffeine.newBuilder()
+    private final Cache<String, TaxPrediction> cache = Caffeine.newBuilder()
             .maximumSize(100000)
-            .expireAfterAccess(Duration.ofMinutes(40))
+            .expireAfterAccess(Duration.ofSeconds(10))
             .build();
-    private final TaxPredictionRepository repository;
-    private final UserService userService;
     private final TaxRateService taxRateService;
+    private final SalaryService salaryService;
 
-    public TaxPredictionService(TaxPredictionRepository repository, UserService userService, TaxRateService taxRateService) {
-        this.repository = repository;
-        this.userService = userService;
+    public TaxPredictionService(TaxRateService taxRateService, SalaryService salaryService) {
         this.taxRateService = taxRateService;
+        this.salaryService = salaryService;
     }
 
-    public TaxPrediction calculateTaxPrediction(BigDecimal salary, TaxUser user) {
+    public BigDecimal calculateTax(BigDecimal salary, TaxUser user) {
         if (null == salary) {
             throw new NotAcceptableException(Collections.singletonList("salary.is.null"));
         }
-        if (cache.estimatedSize() > 0 && null != cache.getIfPresent(salary)) {
-            return cache.getIfPresent(salary);
+
+        List<TaxRateEntity> allSalaryTax = taxRateService.getAllTaxRate(salary);
+        return allSalaryTax.stream()
+                .map(taxRate -> null == taxRate.getMaxSalary() || taxRate.getMaxSalary().compareTo(salary) > 0
+                        ? salary.subtract(taxRate.getMinSalary()).multiply(BigDecimal.valueOf(taxRate.getTaxRate()))
+                        : taxRate.getMaxTax())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public TaxPrediction getTotalTaxAmount(LocalDateTime startDate, LocalDateTime endDate, TaxUser user) {
+        String cacheKey = user.getId().concat("-").concat(startDate.toString()).concat("-").concat(endDate.toString());
+        if (cache.estimatedSize() > 0 && null != cache.getIfPresent(cacheKey)) {
+            return cache.getIfPresent(cacheKey);
         }
 
-        TaxPrediction taxPrediction = repository.findByUserIdAndSalary(user.getId(), salary)
-                .map(entity -> new TaxPrediction(entity.getTaxAmount(), entity.getSalary()))
-                .orElseGet(() -> calculateAndSaveTaxPrediction(salary, user));
-        cache.put(salary, taxPrediction);
+        BigDecimal totalSalary = salaryService.getTotalTaxAmount(user.getId(), startDate, endDate);
+        BigDecimal totalTax = this.calculateTax(totalSalary, user);
+        TaxPrediction taxPrediction = new TaxPrediction(totalTax, totalSalary);
+        cache.put(cacheKey, taxPrediction);
         return taxPrediction;
-    }
-
-    private TaxPrediction calculateAndSaveTaxPrediction(BigDecimal salary, TaxUser user) {
-        List<TaxRateEntity> allSalaryTax = taxRateService.getAllTaxRate(salary);
-        BigDecimal taxAmount = allSalaryTax.stream()
-                .map(salaryTax -> BigDecimal.ZERO.compareTo(salaryTax.getMaxTax()) == 0 || salaryTax.getMaxSalary().compareTo(salary) > 0
-                        ? salary.subtract(salaryTax.getMinSalary())
-                        : salaryTax.getMaxTax())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        this.saveTaxPredictionAsync(salary, taxAmount, user);
-        return new TaxPrediction(taxAmount, salary);
-    }
-
-    @Async
-    public void saveTaxPredictionAsync(BigDecimal salary, BigDecimal taxAmount, TaxUser user) {
-        TaxPredictionEntity entity = new TaxPredictionEntity();
-        entity.setTaxAmount(taxAmount);
-        entity.setSalary(salary);
-        entity.setUser(userService.getOne(user.getUsername()));
-        repository.save(entity);
     }
 }

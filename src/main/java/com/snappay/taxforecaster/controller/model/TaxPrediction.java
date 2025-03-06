@@ -1,4 +1,4 @@
-package com.snappay.taxforecaster.model;
+package com.snappay.taxforecaster.controller.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,9 +11,8 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaxRateDto {
+public class TaxPrediction {
 
-    private BigDecimal minSalary;
-    private BigDecimal maxSalary;
-    private Double taxRate;
+    private BigDecimal taxAmount;
+    private BigDecimal salary;
 }
