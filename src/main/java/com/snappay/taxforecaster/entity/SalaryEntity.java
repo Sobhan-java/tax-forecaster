@@ -1,5 +1,6 @@
 package com.snappay.taxforecaster.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,5 +37,6 @@ public class SalaryEntity {
     private String description;
 
     @ManyToOne(targetEntity = UserEntity.class, optional = false)
+    @JsonIgnore
     private UserEntity user;
 }

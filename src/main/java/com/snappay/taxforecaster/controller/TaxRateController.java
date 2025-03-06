@@ -7,10 +7,7 @@ import com.snappay.taxforecaster.service.taxrate.TaxRateService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/tax-rate")
@@ -27,5 +24,12 @@ public class TaxRateController {
     public ResponseEntity<TaxRateEntity> save(@RequestBody TaxRateDto dto) {
         TaxUser user = (TaxUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(service.save(dto, user));
+    }
+
+    @Operation(summary = "ویرایش جدول مالیاتی")
+    @PutMapping(value = "")
+    public ResponseEntity<TaxRateEntity> update(@RequestBody TaxRateDto dto) {
+        TaxUser user = (TaxUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(service.update(dto, user));
     }
 }

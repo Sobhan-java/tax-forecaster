@@ -24,7 +24,7 @@ public class SalaryService {
     }
 
     public SalaryEntity save(SalaryDto dto, TaxUser user) {
-        this.validationDto(dto, user);
+        this.validationDto(dto);
         SalaryEntity entity = new SalaryEntity();
         entity.setCreateDate(LocalDateTime.now());
         entity.setAmount(dto.getAmount());
@@ -39,7 +39,7 @@ public class SalaryService {
         if (StringUtils.isBlank(dto.getId())) {
             throw new NotAcceptableException(Collections.singletonList("id.is.null"));
         }
-        this.validationDto(dto, user);
+        this.validationDto(dto);
         SalaryEntity entity = repository.findById(dto.getId()).orElseThrow(() -> new NotAcceptableException(Collections.singletonList("salary.not.found")));
         if (!entity.getUser().getId().equals(user.getId())) {
             throw new NotAcceptableException(Collections.singletonList("salary.not.found"));
@@ -51,13 +51,21 @@ public class SalaryService {
         return repository.save(entity);
     }
 
-    private void validationDto(SalaryDto dto, TaxUser user) {
-        if (null == dto || null == dto.getAmount()) {
+    private void validationDto(SalaryDto dto) {
+        if (null == dto) {
             throw new NotAcceptableException(Collections.singletonList("entry.dto.is.not.complete"));
         }
-        boolean existsSalary = repository.checkSalaryExists(dto.getStartDate(), dto.getEndDate(), user.getUsername());
-        if (existsSalary) {
-            throw new NotAcceptableException(Collections.singletonList("salary.is.duplicated"));
+        if (null == dto.getAmount()) {
+            throw new NotAcceptableException(Collections.singletonList("amount.is.null"));
+        }
+        if (null == dto.getStartDate()) {
+            throw new NotAcceptableException(Collections.singletonList("start.date.is.null"));
+        }
+        if (null == dto.getEndDate()) {
+            throw new NotAcceptableException(Collections.singletonList("end.date.is.null"));
+        }
+        if (dto.getEndDate().compareTo(dto.getStartDate()) < 0) {
+            throw new NotAcceptableException(Collections.singletonList("end.date.is.less.than.start"));
         }
     }
 
