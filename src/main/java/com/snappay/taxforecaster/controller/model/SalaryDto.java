@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class SalaryDto {
 
+    private String id;
     private BigDecimal amount;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
