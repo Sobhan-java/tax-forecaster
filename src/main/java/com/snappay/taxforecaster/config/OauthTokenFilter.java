@@ -39,20 +39,21 @@ public class OauthTokenFilter extends OncePerRequestFilter {
             return;
         }
         String token = tokenHeader.replace("Bearer ", "");
-        if (jwtService.validateToken(token)) {
-            TaxUser user = this.getUser(token);
-            if (null == user) {
-                response.sendError(HttpStatus.UNAUTHORIZED.value(), "token.not.valid");
-            }
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(user, null, null);
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-            log.debug("token set in security context holder");
-        } else {
+        if (!jwtService.validateToken(token)) {
+            response.sendError(HttpStatus.UNAUTHORIZED.value(), "token.not.valid");
+            doFilter(request, response, filterChain);
+            return;
+        }
+        TaxUser user = this.getUser(token);
+        if (null == user) {
             response.sendError(HttpStatus.UNAUTHORIZED.value(), "token.not.valid");
         }
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(user, null, null);
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+        log.debug("token set in security context holder");
         doFilter(request, response, filterChain);
     }
 

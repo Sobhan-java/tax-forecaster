@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import static java.time.temporal.TemporalAdjusters.firstDayOfYear;
+import static java.time.temporal.TemporalAdjusters.lastDayOfYear;
+
 @Service
 public class TaxPredictionService {
 
@@ -45,6 +48,12 @@ public class TaxPredictionService {
     }
 
     public TaxPrediction getTotalTaxAmount(LocalDateTime startDate, LocalDateTime endDate, TaxUser user) {
+        if (null == startDate) {
+            startDate = LocalDateTime.now().with(firstDayOfYear());
+        }
+        if (null == endDate) {
+            endDate = LocalDateTime.now().with(lastDayOfYear());
+        }
         String cacheKey = user.getId().concat("-").concat(startDate.toString()).concat("-").concat(endDate.toString());
         if (cache.estimatedSize() > 0 && null != cache.getIfPresent(cacheKey)) {
             return cache.getIfPresent(cacheKey);

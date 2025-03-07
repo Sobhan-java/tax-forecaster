@@ -79,12 +79,20 @@ public class TaxRateService {
             throw new NotAcceptableException(Collections.singletonList("tax.rate.is.null"));
         }
         if (null == dto.getMinSalary()) {
-            throw new NotAcceptableException(Collections.singletonList("min.salary.is.null"));
+            throw new NotAcceptableException(Collections.singletonList("min.salary.not.acceptable"));
+        }
+        if (null == dto.getMaxSalary() && repository.existsByMaxSalary(null)) {
+            throw new NotAcceptableException(Collections.singletonList("tax.rate.with.empty.max.salary.exists"));
         }
         if (null != dto.getMaxSalary() && dto.getMaxSalary().compareTo(dto.getMinSalary()) < 0) {
             throw new NotAcceptableException(Collections.singletonList("max.salary.is.less.than.min"));
         }
-        boolean salaryTaxExists = repository.checkSalaryTaxExists(dto.getMinSalary(), dto.getMaxSalary(), dto.getId());
+        boolean salaryTaxExists;
+        if (StringUtils.isBlank(dto.getId())) {
+            salaryTaxExists = repository.checkSalaryTaxExists(dto.getMinSalary(), dto.getMaxSalary());
+        } else {
+            salaryTaxExists = repository.checkSalaryTaxExists(dto.getMinSalary(), dto.getMaxSalary(), dto.getId());
+        }
         if (salaryTaxExists) {
             throw new NotAcceptableException(Collections.singletonList("salary.tax.duplicated"));
         }

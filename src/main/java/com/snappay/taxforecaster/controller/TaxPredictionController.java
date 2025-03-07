@@ -34,7 +34,8 @@ public class TaxPredictionController {
 
     @Operation(summary = "محاسبه مقدار مالیات براساس تاریخ ورودی", description = "محاسبه مقدار مالیات براساس بازه زمانی وارد شده که در صورت وارد نکردن بازه به صورت پیش فرض سالیانه در نظر گرفته میشود")
     @GetMapping("/total-salary")
-    public ResponseEntity<TaxPrediction> calculate(@RequestParam("startDate") LocalDateTime startDate, @RequestParam("endDate") LocalDateTime endDate) {
+    public ResponseEntity<TaxPrediction> calculate(@RequestParam(value = "startDate", required = false) LocalDateTime startDate,
+                                                   @RequestParam(value = "endDate", required = false) LocalDateTime endDate) {
         TaxUser user = (TaxUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(service.getTotalTaxAmount(startDate, endDate, user));
     }
