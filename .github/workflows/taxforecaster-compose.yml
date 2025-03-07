@@ -9,6 +9,11 @@ on:
       - main
 
 jobs:
+  check-java-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Java Version
+        run: java -version
   build-test:
     runs-on: ubuntu-latest
 
