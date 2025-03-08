@@ -4,6 +4,7 @@ package com.snappay.taxforecaster.service.oauth;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.snappay.taxforecaster.common.TaxUser;
+import com.snappay.taxforecaster.controller.model.TokenModel;
 import com.snappay.taxforecaster.entity.UserEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
@@ -26,7 +27,7 @@ import java.util.UUID;
 @Service
 public class JwtService {
 
-    private final Cache<String, OAuth2AccessToken> cache = Caffeine.newBuilder()
+    private final Cache<String, TokenModel> cache = Caffeine.newBuilder()
             .maximumSize(100000)
             .build();
     private final Long jwtExpirationSecond;
@@ -41,18 +42,18 @@ public class JwtService {
     }
 
     public boolean validateToken(String token) {
-        OAuth2AccessToken oAuth2AccessToken = cache.getIfPresent(token);
-        if (cache.estimatedSize() == 0 || null == oAuth2AccessToken) {
+        TokenModel tokenModel = cache.getIfPresent(token);
+        if (cache.estimatedSize() == 0 || null == tokenModel) {
             return false;
         }
-        if (LocalDateTime.now().toInstant(ZoneOffset.UTC).isAfter(oAuth2AccessToken.getExpiresAt())) {
-            cache.invalidate(oAuth2AccessToken.getTokenValue());
+        if (LocalDateTime.now().toInstant(ZoneOffset.UTC).isAfter(tokenModel.getExpiresAt())) {
+            cache.invalidate(tokenModel.getTokenValue());
             return false;
         }
         return true;
     }
 
-    public OAuth2AccessToken getAccessToken(UserEntity entity) {
+    public TokenModel getAccessToken(UserEntity entity) {
         Key signingKey = this.getSigningKey(signatureAlgorithm);
         Instant expireAt = LocalDateTime.now().plusSeconds(jwtExpirationSecond).toInstant(ZoneOffset.UTC);
         Instant issueAt = LocalDateTime.now().toInstant(ZoneOffset.UTC);
@@ -65,8 +66,20 @@ public class JwtService {
 
         String[] splitScope = tokenScopes.split(",");
         OAuth2AccessToken oAuth2AccessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, builder.compact(), issueAt, expireAt, Set.of(splitScope));
-        cache.put(oAuth2AccessToken.getTokenValue(), oAuth2AccessToken);
-        return oAuth2AccessToken;
+
+        TokenModel tokenModel = this.convert(oAuth2AccessToken);
+        cache.put(oAuth2AccessToken.getTokenValue(), tokenModel);
+        return tokenModel;
+    }
+
+    private TokenModel convert(OAuth2AccessToken oAuth2AccessToken) {
+        TokenModel tokenModel = new TokenModel();
+        tokenModel.setTokenValue(oAuth2AccessToken.getTokenValue());
+        tokenModel.setIssuedAt(oAuth2AccessToken.getIssuedAt());
+        tokenModel.setExpiresAt(oAuth2AccessToken.getExpiresAt());
+        tokenModel.setScopes(oAuth2AccessToken.getScopes());
+        tokenModel.setTokenType(oAuth2AccessToken.getTokenType().getValue());
+        return tokenModel;
     }
 
     private Key getSigningKey(SignatureAlgorithm signatureAlgorithm) {
@@ -77,6 +90,8 @@ public class JwtService {
     public TaxUser extractToken(String token) {
         Key signingKey = this.getSigningKey(signatureAlgorithm);
         Claims claims = Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token).getBody();
-        return new TaxUser(claims.getSubject());
+        TaxUser taxUser = new TaxUser(claims.getSubject());
+        taxUser.setId(claims.getId());
+        return taxUser;
     }
 }

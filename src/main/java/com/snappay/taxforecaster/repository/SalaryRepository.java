@@ -12,6 +12,6 @@ import java.time.LocalDateTime;
 @Repository
 public interface SalaryRepository extends JpaRepository<SalaryEntity, String> {
 
-    @Query("SELECT SUM (sal.amount) FROM salary sal WHERE sal.user.id = :userId AND sal.startDate BETWEEN :startDate and :endDate AND sal.endDate BETWEEN :startDate and :endDate")
+    @Query("SELECT SUM (sal.amount) FROM tb_salary sal WHERE sal.user.id = :userId AND sal.startDate BETWEEN :startDate and :endDate AND sal.endDate BETWEEN :startDate and :endDate")
     BigDecimal getAllSalary(@Param("userId") String userId, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

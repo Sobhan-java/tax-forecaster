@@ -2,11 +2,11 @@ package com.snappay.taxforecaster.service.user;
 
 import com.snappay.taxforecaster.common.exception.NotAcceptableException;
 import com.snappay.taxforecaster.controller.model.TaxUserDto;
+import com.snappay.taxforecaster.controller.model.TokenModel;
 import com.snappay.taxforecaster.entity.UserEntity;
 import com.snappay.taxforecaster.repository.UserRepository;
 import com.snappay.taxforecaster.service.oauth.JwtService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -49,7 +49,7 @@ public class UserService {
         return repository.save(entity);
     }
 
-    public OAuth2AccessToken login(TaxUserDto dto) {
+    public TokenModel login(TaxUserDto dto) {
         UserEntity entity = repository.findByUsername(dto.getUsername());
         if (null == entity) {
             throw new NotAcceptableException(Collections.singletonList("user.not.found"));

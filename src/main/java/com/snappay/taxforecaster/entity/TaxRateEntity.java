@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity(name = "tax_rate")
+@Entity(name = "tb_tax_rate")
 @Data
 @Builder
 @AllArgsConstructor

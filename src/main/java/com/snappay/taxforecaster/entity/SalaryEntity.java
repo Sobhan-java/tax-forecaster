@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity(name = "salary")
+@Entity(name = "tb_salary")
 @Data
 @Builder
 @AllArgsConstructor

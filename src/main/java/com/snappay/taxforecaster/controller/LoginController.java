@@ -1,10 +1,10 @@
 package com.snappay.taxforecaster.controller;
 
 import com.snappay.taxforecaster.controller.model.TaxUserDto;
+import com.snappay.taxforecaster.controller.model.TokenModel;
 import com.snappay.taxforecaster.entity.UserEntity;
 import com.snappay.taxforecaster.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +22,7 @@ public class LoginController {
 
     @Operation(summary = "وظیفه لاگین کردن کاربر", description = "زمانیکه نام کاربری و یا رمز عبور کاربر اشتباه یک ارور کاربر یافت نشد میدهد")
     @PostMapping("/login")
-    public OAuth2AccessToken login(@RequestBody TaxUserDto user) {
+    public TokenModel login(@RequestBody TaxUserDto user) {
         return userService.login(user);
     }
 

@@ -1,12 +1,13 @@
 package com.snappay.taxforecaster.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "user")
+@Entity(name = "tb_user")
 @Data
 @Builder
 @AllArgsConstructor
@@ -21,5 +22,6 @@ public class UserEntity {
     private String username;
 
     @Column
+    @JsonIgnore
     private String password;
 }

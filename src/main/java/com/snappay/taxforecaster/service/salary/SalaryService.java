@@ -69,7 +69,7 @@ public class SalaryService {
         }
     }
 
-    public BigDecimal getTotalTaxAmount(String userId, LocalDateTime startDate, LocalDateTime endDate) {
+    public BigDecimal getAllSalary(String userId, LocalDateTime startDate, LocalDateTime endDate) {
         return repository.getAllSalary(userId, startDate, endDate);
     }
 }

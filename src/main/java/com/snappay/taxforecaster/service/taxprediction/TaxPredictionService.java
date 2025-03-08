@@ -34,7 +34,7 @@ public class TaxPredictionService {
         this.salaryService = salaryService;
     }
 
-    public BigDecimal calculateTax(BigDecimal salary, TaxUser user) {
+    public BigDecimal calculateTax(BigDecimal salary) {
         if (null == salary) {
             throw new NotAcceptableException(Collections.singletonList("salary.is.null"));
         }
@@ -59,8 +59,8 @@ public class TaxPredictionService {
             return cache.getIfPresent(cacheKey);
         }
 
-        BigDecimal totalSalary = salaryService.getTotalTaxAmount(user.getId(), startDate, endDate);
-        BigDecimal totalTax = this.calculateTax(totalSalary, user);
+        BigDecimal totalSalary = salaryService.getAllSalary(user.getId(), startDate, endDate);
+        BigDecimal totalTax = this.calculateTax(totalSalary);
         TaxPrediction taxPrediction = new TaxPrediction(totalTax, totalSalary);
         cache.put(cacheKey, taxPrediction);
         return taxPrediction;
